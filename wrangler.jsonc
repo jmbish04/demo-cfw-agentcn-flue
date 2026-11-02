@@ -179,11 +179,41 @@
       "remote": true,
     },
   ],
+  // This Worker MUST create its own D1 database. These two values are deliberately
+  // NOT a real database, so `wrangler deploy` and `wrangler d1 migrations apply`
+  // both fail until someone replaces them. That failure is the feature.
+  //
+  // MEASURED 2026-11-02, and the reason this is a placeholder rather than a real
+  // id: `database_id` here held d555f8ce-77c9-4c82-be80-de95b8d9c003, which is
+  // core-guardian's PRODUCTION database. core-guardian is the account's spend
+  // governor: it watches the Cloudflare bill and holds the switches that shut
+  // services down.
+  //
+  // The D1 API resolves that uuid to name "core-template-cfw-assets-astro-shadcn",
+  // num_tables 123, file_size 400,293,888 bytes (400.3 MB). A template created the
+  // database and core-guardian adopted it, so Cloudflare still lists the template's
+  // name. The uuid reached this repo from that same template.
+  //
+  // `database_name` above said "demo-cfw-agentcn-flue", which is cosmetic: only the
+  // uuid binds. A server-side code search for this uuid over default branches
+  // returned 13 files on 2026-11-02, so 13 configs bound one database while each
+  // claimed a name of its own.
+  //
+  // The Worker `demo-cfw-agentcn-flue` does not exist on the account: the Workers
+  // API answers "This Worker does not exist on this account." (measured
+  // 2026-11-02). That is NOT safety. The repo is still redeployable, and `pnpm run
+  // deploy` would bind guardian's database again and run this repo's Drizzle
+  // migrations against it.
+  //
+  // To set this project up:
+  //   npx wrangler d1 create demo-cfw-agentcn-flue
+  //   # put the returned name and uuid below, then:
+  //   npx wrangler d1 migrations apply DB --remote
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "demo-cfw-agentcn-flue",
-      "database_id": "d555f8ce-77c9-4c82-be80-de95b8d9c003",
+      "database_name": "REPLACE_WITH_YOUR_OWN_D1_DATABASE",
+      "database_id": "replace-me-run-wrangler-d1-create",
       "migrations_dir": "drizzle",
     },
   ],
